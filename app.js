@@ -2,12 +2,31 @@ const express = require('express');
 const exphbs = require('express-handlebars');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
+const flash = require('connect-flash');
+const session = require('express-session');
 
 const app = express();
+
+//express session
+app.use(session({
+  secret: 'secret',
+  resave: true,
+  saveUninitialized: true
+}));
+
+app.use(flash());
 
 //body parser
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+//global variable
+app.use(function(req,res,next){
+    res.locals.success_msg =  req.flash('success_msg');
+    res.locals.error_msg =  req.flash('error_msg');
+    res.locals.errors = req.flash('error');
+    next();
+});
 
 //method override 
 app.use(methodOverride('_method'));
@@ -40,7 +59,7 @@ app.get('/about', (req,res) => {
    });
 //add ideas
 app.get('/ideas/add',(req,res) =>{
- res.render('ideas/add');
+    res.render('ideas/add');
 });
 //edit ideas
 app.get('/ideas/edit/:id',(req,res) => {
@@ -91,6 +110,7 @@ app.post('/ideas', (req,res)=>{
     new Idea(newUser)
     .save()
     .then(idea =>{
+        req.flash('success_msg','Idea is added');
         res.redirect('/ideas');
     })
     }
@@ -106,12 +126,21 @@ app.put('/ideas/:id',(req,res) => {
         idea.details=req.body.details;
         idea.save()
         .then(idea=>{
+            req.flash('success_msg','Idea is updated');
             res.redirect('/ideas');
         })
 
     })
     
-})
+});
+//delete request
+app.delete('/ideas/:id',(req,res)=>{
+   Idea.remove({_id: req.params.id})
+   .then(()=>{
+       req.flash('success_msg','Idea is removed');
+       res.redirect('/ideas');
+   })
+});
 const port = 5000;
 app.listen(port, () => {
     console.log('server started on port ' + port);
