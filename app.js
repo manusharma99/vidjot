@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 const flash = require('connect-flash');
 const session = require('express-session');
+const passport = require('passport');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -36,7 +38,6 @@ app.use(function(req,res,next){
 app.use(methodOverride('_method'));
 
 //mongoose
-const mongoose = require('mongoose');
 mongoose.connect('mongodb+srv://manusharma99:manu@9990738223@cluster0-ta5ng.mongodb.net/test?retryWrites=true&w=majority', {useNewUrlParser: true})
 .then(() => console.log('mongodb is connected'))
 .catch(err => console.log(err));
@@ -51,6 +52,9 @@ app.set('view engine', 'handlebars');
 //load routes for ideas
 const ideas = require('./routers/ideas');
 const users = require('./routers/users');
+
+//passport
+require('./config/passport')(passport);
 
 //routes
 app.get('/', (req,res) => {
